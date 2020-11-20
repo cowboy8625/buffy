@@ -1,0 +1,10 @@
+[package]
+name = "buffy"
+version = "0.1.0"
+authors = ["cowboy8625 <43012445+cowboy8625@users.noreply.github.com>"]
+edition = "2018"
+
+[dependencies]
+
+[dev-dependencies]
+crossterm = "0.18.2"
