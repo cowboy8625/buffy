@@ -1,4 +1,5 @@
 use std::iter::FromIterator;
+use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Cell {
@@ -8,6 +9,22 @@ pub struct Cell {
 impl Cell {
     pub fn new(chr: char) -> Self {
         Self { chr }
+    }
+}
+
+impl fmt::Display for Cell {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.chr)
+    }
+}
+
+impl<'a> FromIterator<&'a Cell> for String {
+    fn from_iter<I: IntoIterator<Item=&'a Cell>>(iter: I) -> Self {
+        let mut string = String::new();
+        for c in iter {
+            string.push(c.chr);
+        }
+        string
     }
 }
 
@@ -113,6 +130,19 @@ impl Buffer {
             string.push(c.chr);
         }
         func(&string);
+    }
+}
+
+impl fmt::Display for Buffer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let string: String = self.cells.iter().enumerate().map(|(i, c)|{
+            if i != 0 && i % self.width == 0 {
+                format!("{}\n", c)
+            } else {
+                c.chr.to_string()
+            }
+        }).collect();
+        write!(f, "{}", string)
     }
 }
 

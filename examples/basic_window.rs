@@ -25,4 +25,6 @@ fn main() {
         }
         write.flush().expect("Failed to flush");
     });
+
+    println!("dklsajkjfsa {}", buff);
 }
