@@ -110,20 +110,21 @@ pub struct Buffer {
     width: usize,
     height: usize,
     cells: Vec<Cell>,
+    blank: char,
     //queue: Vec<Queue<T>>,
 }
 
 
 impl Buffer {
-    pub fn new(width: usize, height: usize) -> Self {
-        let cells = Self::create_cells(width,height);
-        Self { width, height, cells }
+    pub fn new(width: usize, height: usize, blank: char) -> Self {
+        let cells = Self::create_cells(width,height, blank);
+        Self { width, height, cells, blank }
     }
 
-    fn create_cells(width: usize, height: usize) -> Vec<Cell> {
+    fn create_cells(width: usize, height: usize, blank: char) -> Vec<Cell> {
         let mut lines = Vec::new();
         (0..height*width).for_each(
-                |_| lines.push(Cell::new('#'))
+                |_| lines.push(Cell::new(blank))
             );
         lines
     }
@@ -147,12 +148,15 @@ impl Buffer {
         line.swap_with_slice(&mut self.cells[start..end]);
     }
 
-    pub fn insert_vline(&mut self, row_num: u16, line: &[Cell]) {
-        assert!((row_num as usize) < self.width);
+    pub fn insert_vline(&mut self, x: u16, y: u16, line: &[Cell]) {
+        assert!((x as usize) < self.width);
+        assert!((y as usize) < self.height);
         let mut line_iter = line.iter();
-        for line in self.cells.chunks_mut(self.width) {
-            if let Some(cell) = line_iter.next() {
-                line[row_num as usize] = cell.clone();
+        for (yl, line) in self.cells.chunks_mut(self.width).enumerate() {
+            if yl >= y as usize {
+                if let Some(cell) = line_iter.next() {
+                    line[x as usize] = cell.clone();
+                }
             }
         }
     }

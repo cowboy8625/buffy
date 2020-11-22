@@ -11,13 +11,13 @@ fn main() {
                 .on(Color::Blue)
                     .attribute(Attribute::Bold);
     let mut write = stdout();
-    let mut buff = buffy::Buffer::new(50, 30);
+    let mut buff = buffy::Buffer::new(50, 30, ' ');
     let mut hline = buffy::Line::from(string);
     let vline = buffy::Line::from(&styled.to_string()[..]);
 
 
+    buff.insert_vline(20, 4, vline.as_slice());
     buff.insert_line(3, hline.as_mut_slice());
-    buff.insert_vline(20, vline.as_slice());
     buff.get(&mut |lines| {
         for (idx, line) in lines.split("\n").enumerate() {
             crossterm::queue!(
@@ -28,4 +28,6 @@ fn main() {
         }
         write.flush().expect("Failed to flush");
     });
+    let thing = crossterm::style::SetForegroundColor(Color::Rgb { r: 0, g: 139, b: 139 });
+    println!("{}", thing);
 }
