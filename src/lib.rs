@@ -1,33 +1,39 @@
 use std::iter::FromIterator;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy)]
-pub struct Cell<T: fmt::Display + Clone> {
+#[derive(Debug, Clone)]
+pub struct Cell {
     chr: char,
-    fg: Option<T>,
-    bg: Option<T>,
+    style: Option<String>,
+    end: Option<String>,
 }
 
-impl<T: fmt::Display + Clone> Cell<T> {
+impl Cell {
     pub fn new(chr: char) -> Self {
-        Self { chr, fg: None, bg: None }
+        Self { chr, style: None, end: None }
     }
 }
 
-impl<T: fmt::Display + Clone> fmt::Display for Cell<T> {
+impl fmt::Display for Cell {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let cell = match (&self.chr, &self.fg, &self.bg) {
-            (c, Some(f), None) => format!("{}{}", f, c),
-            (c, None, Some(b)) => format!("{}{}", b, c),
-            (c, Some(f), Some(b)) => format!("{}{}{}", f, b, c),
-            (c, None, None) => c.to_string(),
+        let cell = match (&self.style, &self.chr, &self.end) {
+            (Some(s), c, None) => format!("{}{}", s, c),
+            (None, c, Some(e)) => format!("{}{}", c, e),
+            (Some(s), c, Some(e)) => format!("{}{}{}", s, c, e),
+            (None, c, None) => c.to_string(),
         };
         write!(f, "{}", cell)
     }
 }
 
-impl<'a, T: fmt::Display + Clone + 'a> FromIterator<&'a Cell<T>> for String {
-    fn from_iter<I: IntoIterator<Item=&'a Cell<T>>>(iter: I) -> Self {
+impl From<(char, Option<String>, Option<String>)> for Cell {
+    fn from((chr, style, end): (char, Option<String>, Option<String>)) -> Self {
+        Self { chr, style, end }
+    }
+}
+
+impl<'a> FromIterator<&'a Cell> for String {
+    fn from_iter<I: IntoIterator<Item=&'a Cell>>(iter: I) -> Self {
         let mut string = String::new();
         for c in iter {
             string.push_str(&c.to_string());
@@ -37,35 +43,57 @@ impl<'a, T: fmt::Display + Clone + 'a> FromIterator<&'a Cell<T>> for String {
 }
 
 #[derive(Debug, Clone)]
-pub struct Line<T: fmt::Display + Clone> {
-    chars: Vec<Cell<T>>,
+pub struct Line {
+    cells: Vec<Cell>,
 }
 
-impl<T: fmt::Display + Clone> Line<T> {
+impl Line {
     pub fn new() -> Self {
-        Self { chars: Vec::new() }
+        Self { cells: Vec::new() }
     }
 
-    pub fn as_slice(&self) -> &[Cell<T>] {
-        self.chars.as_slice()
+    pub fn as_slice(&self) -> &[Cell] {
+        self.cells.as_slice()
     }
-}
 
-impl<T: fmt::Display + Clone> From<&str> for Line<T> {
-    fn from(string: &str) -> Self {
-        let mut chars = Vec::new();
-        for c in string.chars() {
-            chars.push(Cell::new(c));
+    pub fn as_mut_slice(&mut self) -> &mut [Cell] {
+        self.cells.as_mut_slice()
+    }
+
+    pub fn style(&mut self, fg: &str) -> &mut Self {
+        if let Some(c) = self.cells.get_mut(0) {
+            c.style = Some(fg.to_string());
         }
-        Self { chars }
+        if let Some(c) = self.cells.last_mut() {
+            if let None = c.style {
+                c.style = Some("\x1b[0m".to_string());
+
+            }
+        }
+        self
     }
 }
 
-impl<'a, T: fmt::Display + Clone> FromIterator<&'a str> for Line<T> {
+impl From<&str> for Line {
+    fn from(string: &str) -> Self {
+        let (start, text, end) = strip_code(string);
+        let cells: Vec<Cell> = text.chars().map(|c| ( c, start.clone(), end.clone(),).into()).collect();
+        Self { cells }
+    }
+}
+
+impl fmt::Display for Line {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let line: String = self.cells.iter().collect();
+        write!(f, "{}", line)
+    }
+}
+
+impl<'a> FromIterator<&'a str> for Line {
     fn from_iter<I: IntoIterator<Item=&'a str>>(iter: I) -> Self {
         let string: String = iter.into_iter().collect();
-        let chars: Vec<_> = string.chars().map(|c| Cell::new(c)).collect();
-        Self { chars }
+        let cells: Vec<_> = string.chars().map(|c| Cell::new(c)).collect();
+        Self { cells }
     }
 }
 
@@ -78,48 +106,48 @@ impl<'a, T: fmt::Display + Clone> FromIterator<&'a str> for Line<T> {
 //
 
 #[derive(Debug, Clone)]
-pub struct Buffer<T: fmt::Display + Clone> {
+pub struct Buffer {
     width: usize,
     height: usize,
-    cells: Vec<Cell<T>>,
+    cells: Vec<Cell>,
     //queue: Vec<Queue<T>>,
 }
 
 
-impl<T: fmt::Display + Clone> Buffer<T> {
+impl Buffer {
     pub fn new(width: usize, height: usize) -> Self {
         let cells = Self::create_cells(width,height);
         Self { width, height, cells }
     }
 
-    fn create_cells(width: usize, height: usize) -> Vec<Cell<T>> {
+    fn create_cells(width: usize, height: usize) -> Vec<Cell> {
         let mut lines = Vec::new();
         (0..height*width).for_each(
-                |_| lines.push(Cell::new('&'))
+                |_| lines.push(Cell::new('#'))
             );
         lines
     }
 
-    pub fn as_slice(&self) -> &[Cell<T>] {
+    pub fn as_slice(&self) -> &[Cell] {
         self.cells.as_slice()
     }
 
-    pub fn insert_from_idx(&mut self, idx: usize, cell: Cell<T>) {
+    pub fn insert_from_idx(&mut self, idx: usize, cell: Cell) {
         [cell].swap_with_slice(&mut self.cells[idx..]);
     }
 
-    pub fn insert_from_cords(&mut self, x: u16, y: u16, cell: Cell<T>) {
+    pub fn insert_from_cords(&mut self, x: u16, y: u16, cell: Cell) {
         let idx = y as usize * self.width + x as usize;
         [cell].swap_with_slice(&mut self.cells[idx..]);
     }
 
-    pub fn insert_line(&mut self, line_num: u16, line: &mut [Cell<T>]) {
+    pub fn insert_line(&mut self, line_num: u16, line: &mut [Cell]) {
         let start = line_num as usize * self.width;
         let end = start + line.len();
         line.swap_with_slice(&mut self.cells[start..end]);
     }
 
-    pub fn insert_vline(&mut self, row_num: u16, line: &[Cell<T>]) {
+    pub fn insert_vline(&mut self, row_num: u16, line: &[Cell]) {
         assert!((row_num as usize) < self.width);
         let mut line_iter = line.iter();
         for line in self.cells.chunks_mut(self.width) {
@@ -135,22 +163,30 @@ impl<T: fmt::Display + Clone> Buffer<T> {
             if idx != 0 && idx % self.width == 0 {
                 string.push('\n');
             }
-            string.push(c.chr);
+            string.push_str(&c.to_string());
         }
         func(&string);
     }
 }
 
-impl<T: fmt::Display + Clone> fmt::Display for Buffer<T> {
+impl fmt::Display for Buffer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let string: String = self.cells.iter().enumerate().map(|(i, c)|{
             if i != 0 && i % self.width == 0 {
                 format!("{}\n", c)
             } else {
-                c.chr.to_string()
+                c.to_string()
             }
         }).collect();
         write!(f, "{}", string)
     }
+}
+
+fn strip_code(string: &str) ->  (Option<String>, String, Option<String>) {
+    let raw = regex::Regex::new("\u{1b}\\[[\\d;]+m").expect("Regex Failed to parse string.").replace_all(string.clone(), "");
+    let result: Vec<_> = string.clone().split(&raw.to_string()).collect();
+    let start = result.get(0).map(std::string::ToString::to_string).filter(|i| !i.is_empty());
+    let end = result.get(1).map(std::string::ToString::to_string).filter(|i| !i.is_empty());
+    (start, raw.to_string(), end)
 }
 

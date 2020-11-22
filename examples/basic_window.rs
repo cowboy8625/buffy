@@ -1,21 +1,24 @@
+use crossterm::style::{style, Color, Attribute};
 use std::io::{Write, stdout};
 use crossterm;
 use buffy;
 
 fn main() {
+    let string = "No color on this line.";
+
+    let styled = style("This line has color")
+            .with(Color::Yellow)
+                .on(Color::Blue)
+                    .attribute(Attribute::Bold);
     let mut write = stdout();
     let mut buff = buffy::Buffer::new(50, 30);
-    let mut hline = Vec::new();
-    for c in "Line changed".chars() {
-        hline.push(buffy::Cell::new(c));
-    }
-
-    let vline = buffy::Line::from("This is a line struct");
+    let mut hline = buffy::Line::from(string);
+    let vline = buffy::Line::from(&styled.to_string()[..]);
 
 
-    buff.insert_line(3, &mut hline);
-    buff.insert_vline(20, &mut vline.as_slice());
-    buff.draw(&mut |lines| {
+    buff.insert_line(3, hline.as_mut_slice());
+    buff.insert_vline(20, vline.as_slice());
+    buff.get(&mut |lines| {
         for (idx, line) in lines.split("\n").enumerate() {
             crossterm::queue!(
                 write,
@@ -25,6 +28,4 @@ fn main() {
         }
         write.flush().expect("Failed to flush");
     });
-
-    println!("dklsajkjfsa {}", buff);
 }
