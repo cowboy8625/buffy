@@ -32,7 +32,7 @@ impl Buffer {
     pub fn insert_from_idx(&mut self, idx: usize, cell: Cell) {
         let x = (idx % self.width) as u16;
         let y = (idx / self.width) as u16;
-        self.queue.push(Queued::Cell{x, y, cell: cell.clone()});
+        self.queue.push(Queued::from((x, y, cell.clone())));
         [cell].swap_with_slice(&mut self.cells[idx..idx+1]);
     }
 
