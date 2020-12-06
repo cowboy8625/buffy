@@ -8,8 +8,8 @@ fn main() {
 
     let styled = style("This line has color")
             .with(Color::Yellow)
-                .on(Color::Blue)
-                    .attribute(Attribute::Bold);
+            .on(Color::Blue)
+            .attribute(Attribute::Bold);
     let mut write = stdout();
     let mut buff = buffy::Buffer::new(50, 30, ' ');
     let mut hline = buffy::Line::from(string);
