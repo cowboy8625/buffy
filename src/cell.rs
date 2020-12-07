@@ -1,6 +1,7 @@
 use std::iter::FromIterator;
 use std::fmt;
 
+/// Cell holds a character with a style value
 #[derive(Debug, Clone)]
 pub struct Cell {
     pub chr: char,
@@ -9,8 +10,15 @@ pub struct Cell {
 }
 
 impl Cell {
+    /// Create a new Cell
     pub fn new(chr: char) -> Self {
         Self { chr, style: None, end: None }
+    }
+
+    /// Set style of Cell
+    pub fn with_style(&mut self, style: &str) -> &mut Self {
+        self.style = Some(style.to_string());
+        self
     }
 }
 
