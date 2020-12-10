@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::{Cell, IterBuffer, IterMutBuffer, Queued};
+use crate::{Cell, Line, IterBuffer, IterMutBuffer, Queued};
 
 /// A Buffer is rectangular data structure that can provide a easy way to arrange
 /// text with color in a terminal.
@@ -48,6 +48,14 @@ impl Buffer {
     /// Returns a mutable refrance to the slice of Cells
     pub fn as_mut_slice(&mut self) -> &mut [Cell] {
         self.cells.as_mut_slice()
+    }
+
+    /// Insert From a string will break up strings with `\n` and place then
+    /// and place them as you would expect them to appear.
+    pub fn insert_from_str(&mut self, idx: usize, string: &str) {
+        let string_lines = string.split("\n").collect::<Vec<&str>>();
+        let mut lines = string_lines.iter().map(|sl| Line::from(*sl)).collect::<Vec<_>>();
+        lines.iter_mut().enumerate().for_each(|(i, l)| self.insert_line((i + idx) as u16, l.as_mut_slice()));
     }
 
     /// Insert a single `Cell` at a index position.
