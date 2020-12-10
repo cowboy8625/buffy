@@ -53,9 +53,13 @@ impl Buffer {
     /// Insert From a string will break up strings with `\n` and place then
     /// and place them as you would expect them to appear.
     pub fn insert_from_str(&mut self, idx: usize, string: &str) {
+        // let x = idx % self.width;
+        let y = idx / self.width;
         let string_lines = string.split("\n").collect::<Vec<&str>>();
         let mut lines = string_lines.iter().map(|sl| Line::from(*sl)).collect::<Vec<_>>();
-        lines.iter_mut().enumerate().for_each(|(i, l)| self.insert_line((i + idx) as u16, l.as_mut_slice()));
+        lines.iter_mut().enumerate().for_each(|(i, l)| {
+            self.insert_line((y + i) as u16, l.as_mut_slice());
+        });
     }
 
     /// Insert a single `Cell` at a index position.

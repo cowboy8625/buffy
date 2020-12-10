@@ -13,6 +13,11 @@ impl Line {
         self.cells.len()
     }
 
+    /// Inserts at position.
+    pub fn insert(&mut self, idx: usize, cell: Cell) {
+        self.cells.insert(idx, cell);
+    }
+
     /// Returns a true if empty.
     pub fn is_empty(&self) -> bool {
         if self.cells.len() == 0 { true } else { false }
