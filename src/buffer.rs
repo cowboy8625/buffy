@@ -53,12 +53,13 @@ impl Buffer {
     /// Insert From a string will break up strings with `\n` and place then
     /// and place them as you would expect them to appear.
     pub fn insert_from_str(&mut self, idx: usize, string: &str) {
-        // let x = idx % self.width;
+        let mut x = (idx % self.width) as u16;
         let y = idx / self.width;
         let string_lines = string.split("\n").collect::<Vec<&str>>();
         let mut lines = string_lines.iter().map(|sl| Line::from(*sl)).collect::<Vec<_>>();
         lines.iter_mut().enumerate().for_each(|(i, l)| {
-            self.insert_line((y + i) as u16, l.as_mut_slice());
+            self.insert_line(x, (y + i) as u16, l.as_mut_slice());
+            x = i as u16;
         });
     }
 
@@ -77,8 +78,8 @@ impl Buffer {
     }
 
     /// Insert a slice from line number.
-    pub fn insert_line(&mut self, line_num: u16, line: &mut [Cell]) {
-        let start = line_num as usize * self.width;
+    pub fn insert_line(&mut self, x: u16, y: u16, line: &mut [Cell]) {
+        let start = y as usize * self.width + x as usize;
         let end = start + line.len();
         line.swap_with_slice(&mut self.cells[start..end]);
     }
@@ -122,15 +123,18 @@ impl Buffer {
 }
 
 impl fmt::Display for Buffer {
+    // FIXME: Clean this up.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let string: String = self.cells.iter().enumerate().map(|(i, c)|{
-            if i != 0 && i % self.width == 0 {
-                format!("{}\n", c)
+        let lines = self.cells.chunks(self.width);
+        let len = lines.len() - 1;
+        for (i, line) in lines.enumerate() {
+            if i == len {
+                write!(f, "{}", line.iter().map(|c| c.to_string()).collect::<String>())?;
             } else {
-                c.to_string()
+                write!(f, "{}\n", line.iter().map(|c| c.to_string()).collect::<String>())?;
             }
-        }).collect();
-        write!(f, "{}", string)
+        }
+        Ok(())
     }
 }
 
@@ -142,3 +146,43 @@ impl<'a> IntoIterator for &'a Buffer {
         self.iter()
     }
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_buffer_new() {
+        let window = Buffer::new(5, 5, '#');
+        assert_eq!(window.to_string(), "#####\n#####\n#####\n#####\n#####");
+    }
+
+    #[test]
+    fn test_insert_from_str() {
+        let mut window = Buffer::new(5, 5, '#');
+        window.insert_from_str(3, "Hello World");
+        assert_eq!(window.to_string(), "###He\nllo W\norld#\n#####\n#####");
+    }
+
+    #[test]
+    fn test_insert_line() {
+        let mut window = Buffer::new(5, 5, '#');
+        let mut line = Line::from("Hey There");
+        window.insert_line(0, 0, line.as_mut_slice());
+        assert_eq!(window.to_string(), "Hey T\nhere#\n#####\n#####\n#####");
+    }
+
+    #[test]
+    fn test_insert_vline() {
+        let mut window = Buffer::new(5, 5, '#');
+        let mut line = Line::from("Hey");
+        window.insert_vline(0, 0, line.as_mut_slice());
+        assert_eq!(window.to_string(), "H####\ne####\ny####\n#####\n#####");
+        let mut line = Line::from("Hey there");
+        window.insert_vline(0, 0, line.as_mut_slice());
+        assert_eq!(window.to_string(), "H####\ne####\ny####\n ####\nt####");
+    }
+}
+
+
