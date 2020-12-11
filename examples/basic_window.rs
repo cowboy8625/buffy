@@ -17,7 +17,7 @@ fn main() {
 
 
     buff.insert_vline(20, 4, vline.as_slice());
-    buff.insert_line(3, hline.as_mut_slice());
+    buff.insert_line(0, 3, hline.as_mut_slice());
     buff.get(&mut |lines| {
         for (idx, line) in lines.split("\n").enumerate() {
             crossterm::queue!(
