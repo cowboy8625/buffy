@@ -62,6 +62,6 @@ mod test {
         for (i, c) in buffer.iter_mut().enumerate() {
             *c = Cell::from(((i + 48) as u8) as char);
         }
-        assert_eq!(buffer.to_string(), "012345\n6789".to_string());
+        assert_eq!(buffer.to_string(), "01234\n56789".to_string());
     }
 }
