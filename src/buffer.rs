@@ -111,7 +111,19 @@ impl Buffer {
         func(&string);
     }
 
+    /// Returns a Option<Vec<Queued>>
+    pub fn queue(&mut self) -> Option<Vec<Queued>> {
+        if self.queue.is_empty() {
+            None
+        } else {
+            let q = self.queue.clone();
+            self.queue.clear();
+            Some(q)
+        }
+    }
+
     /// Returns a slice of Lines
+    /// this is going away
     pub fn get_lines(&self) -> Vec<Line> {
         // FIXME: should be a `&[Line]
         self.cells.chunks(self.width).into_iter().map(|l| Line::from(l)).collect::<Vec<Line>>()

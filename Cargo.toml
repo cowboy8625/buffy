@@ -1,8 +1,13 @@
 [package]
 name = "buffy"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["cowboy8625 <43012445+cowboy8625@users.noreply.github.com>"]
 edition = "2018"
+description = "A text buffer"
+readme = "README.md"
+repository = "https://github.com/cowboy8625/buffy"
+license = "Apache-2.0"
+keywords = ["buffer"]
 
 [dependencies]
 regex = "1.4.2"
