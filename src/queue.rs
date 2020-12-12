@@ -6,6 +6,15 @@ pub enum Queueable {
     Line(Line),
 }
 
+impl Queueable {
+    pub fn value(self) -> Line {
+        match self {
+            Self::Cell(c) => Line::from(vec![c].as_slice()),
+            Self::Line(l) => l,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Queued {
     x: u16,
