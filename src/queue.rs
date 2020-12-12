@@ -34,8 +34,8 @@ impl Queued {
         (self.x, self.y)
     }
 
-    pub fn value(&self) -> &Queueable {
-        &self.inner
+    pub fn value(self) -> Line {
+        self.inner.value()
     }
 }
 
@@ -54,3 +54,19 @@ impl From<(u16, u16, Line)> for Queued {
         }
     }
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_enum_queueable() {
+        let q = Queueable::Cell(Cell::new('b'));
+        assert_eq!(q.value(), Line::from("b"));
+    }
+}
+
+
+
+
