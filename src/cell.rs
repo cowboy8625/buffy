@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 use std::fmt;
 
 /// Cell holds a character with a style value
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Cell {
     pub chr: char,
     pub style: Option<String>,

@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 use std::fmt;
 use crate::Cell;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Line {
     cells: Vec<Cell>,
 }
@@ -46,7 +46,7 @@ impl Line {
         self
     }
 
-    pub fn center(&mut self, width: u16) {
+    pub fn center(&mut self, _width: u16) {
         todo!();
     }
 }
@@ -69,6 +69,12 @@ impl From<&str> for Line {
         let (start, text, end) = strip_code(string);
         let cells: Vec<Cell> = text.chars().map(|c| ( c, start.clone(), end.clone(),).into()).collect();
         Self { cells }
+    }
+}
+
+impl From<&[Cell]> for Line {
+    fn from(cells: &[Cell]) -> Self {
+        Self { cells: cells.to_vec() }
     }
 }
 

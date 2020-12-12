@@ -29,7 +29,7 @@ impl Buffer {
     /// Create a new buffer with a width and height and background character (aka blank).
     pub fn new(width: usize, height: usize, blank: char) -> Self {
         let cells = Self::create_cells(width,height, blank);
-        Self { width, height, cells, blank, queue: Vec::new() }
+        Self { width, height, cells, blank, queue: Vec::new(), }
     }
 
 
@@ -111,6 +111,18 @@ impl Buffer {
         func(&string);
     }
 
+    /// Returns a slice of Lines
+    pub fn get_lines(&self) -> Vec<Line> {
+        // FIXME: should be a `&[Line]
+        self.cells.chunks(self.width).into_iter().map(|l| Line::from(l)).collect::<Vec<Line>>()
+    }
+
+    /// Returns a slice of Lines
+    pub fn get_mut_lines(&mut self) -> &mut [Line] {
+        // NOTE: if get_lines doesnt return a Slice of Lines then this is a pointless method.
+        todo!();
+    }
+
     /// Returns a Iterator
     pub fn iter(&'_ self) -> IterBuffer<'_> {
         IterBuffer { inner: self, index: 0 }
@@ -122,7 +134,8 @@ impl Buffer {
     }
 }
 
-impl fmt::Display for Buffer {
+
+impl<'a> fmt::Display for Buffer {
     // FIXME: Clean this up.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let lines = self.cells.chunks(self.width);
@@ -182,6 +195,13 @@ mod test {
         let mut line = Line::from("Hey there");
         window.insert_vline(0, 0, line.as_mut_slice());
         assert_eq!(window.to_string(), "H####\ne####\ny####\n ####\nt####");
+    }
+
+    #[test]
+    fn test_get_line() {
+        let window = Buffer::new(5, 5, '#');
+        let lines = window.get_lines();
+        assert_eq!(lines, vec![Line::from("#####"), Line::from("#####") ,Line::from("#####") ,Line::from("#####") ,Line::from("#####"),]);
     }
 }
 
