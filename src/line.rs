@@ -8,6 +8,11 @@ pub struct Line {
 }
 
 impl Line {
+    /// Breaks up a string into a Vec<Line>
+    pub(crate) fn slice_to_lines(width: usize, cells: &[Cell]) -> Vec<Line> {
+        cells.chunks(width).map(Line::from).collect::<Vec<Line>>()
+    }
+
     /// Returns a length of Line as usize.
     pub fn len(&self) -> usize {
         self.cells.len()

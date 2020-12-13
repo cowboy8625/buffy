@@ -1,6 +1,6 @@
 use crate::{Line, Cell};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Queueable {
     Cell(Cell),
     Line(Line),
@@ -15,7 +15,7 @@ impl Queueable {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Queued {
     x: u16,
     y: u16,
@@ -55,6 +55,29 @@ impl From<(u16, u16, Line)> for Queued {
     }
 }
 
+impl From<(u16, u16, &Line)> for Queued {
+    fn from((x, y, line): (u16, u16, &Line)) -> Self {
+        Self {
+            x, y , inner: Queueable::Line(line.to_owned()),
+        }
+    }
+}
+
+impl From<(u16, u16, &[Cell])> for Queued {
+    fn from((x, y, cells): (u16, u16, &[Cell])) -> Self {
+        Self {
+            x, y , inner: Queueable::Line(Line::from(cells)),
+        }
+    }
+}
+
+impl From<(u16, u16, &mut [Cell])> for Queued {
+    fn from((x, y, cells): (u16, u16, &mut [Cell])) -> Self {
+        Self {
+            x, y , inner: Queueable::Line(Line::from(cells.to_vec().to_owned().as_slice())),
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {

@@ -81,11 +81,22 @@ impl Buffer {
     pub fn insert_line(&mut self, x: u16, y: u16, line: &mut [Cell]) {
         let start = y as usize * self.width + x as usize;
         let end = start + line.len();
+        Line::slice_to_lines(self.width, line
+                             .to_vec()
+                             .to_owned()
+                             .as_slice()
+                             )
+            .iter()
+            .enumerate()
+            .for_each( |(i, l)| {
+            self.queue.push(Queued::from((x, y + i as u16, l)));
+        });
         line.swap_with_slice(&mut self.cells[start..end]);
     }
 
     /// Insert a vertical line(aka a slice) at a x and y posistion.
     pub fn insert_vline(&mut self, x: u16, y: u16, line: &[Cell]) {
+        // FIXME: Added Insert Queued.
         assert!((x as usize) < self.width);
         assert!((y as usize) < self.height);
         let mut line_iter = line.iter();
@@ -190,12 +201,21 @@ mod test {
         assert_eq!(window.to_string(), "###He\nllo W\norld#\n#####\n#####");
     }
 
+    /// Checks to make sure that the insert_line method not only pushes
+    /// a line to the right location in the buffer but also added the line to the queue
     #[test]
     fn test_insert_line() {
         let mut window = Buffer::new(5, 5, '#');
         let mut line = Line::from("Hey There");
-        window.insert_line(0, 0, line.as_mut_slice());
-        assert_eq!(window.to_string(), "Hey T\nhere#\n#####\n#####\n#####");
+        let (x, y) = (0, 0);
+        let output = "Hey T\nhere#\n#####\n#####\n#####";
+        window.insert_line(x, y, line.as_mut_slice());
+        assert_eq!(window.to_string(), output);
+        let output_queue = vec![
+            Queued::from((x, y, Line::from("Hey T"))),
+            Queued::from((x, y+1, Line::from("here")))
+        ];
+        assert_eq!(window.queue(), Some(output_queue));
     }
 
     #[test]
