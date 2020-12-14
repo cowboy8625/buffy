@@ -12,22 +12,29 @@ fn main() {
             .attribute(Attribute::Bold);
     let mut write = stdout();
     let mut buff = buffy::Buffer::new(50, 30, ' ');
-    let mut hline = buffy::Line::from(string);
+    let hline = buffy::Line::from(string);
     let vline = buffy::Line::from(&styled.to_string()[..]);
 
 
-    buff.insert_vline(20, 4, vline.as_slice());
-    buff.insert_line(0, 3, hline.as_mut_slice());
-    buff.get(&mut |lines| {
-        for (idx, line) in lines.split("\n").enumerate() {
+    buff.insert_vline(&(20u16, 4u16).into(), &vline);
+    buff.insert_line(&(0u16, 3u16).into(), hline);
+    crossterm::queue!(write, crossterm::terminal::Clear(crossterm::terminal::ClearType::All)).expect("Couldnt Clear");
+    let mut my = 0;
+    if let Some(qline) = buff.queue() {
+        qline.iter().for_each(|line| {
+            let (x, y) = line.cords();
+            my = std::cmp::max(my, y);
             crossterm::queue!(
                 write,
-                crossterm::cursor::MoveTo(0, idx as u16),
-                crossterm::style::Print(line))
+                crossterm::cursor::MoveTo(x, y),
+                crossterm::style::Print(line.to_string()))
                     .expect("Failed to print to screen.");
-        }
-        write.flush().expect("Failed to flush");
-    });
-    let thing = crossterm::style::SetForegroundColor(Color::Rgb { r: 0, g: 139, b: 139 });
-    println!("{}", thing);
+            crossterm::queue!(write, crossterm::cursor::MoveTo(0, my + 1))
+                .expect("Couldnt move cursor");
+        });
+    }
+    write.flush()
+        .expect("Failed to flush");
+    // let thing = crossterm::style::SetForegroundColor(Color::Rgb { r: 0, g: 139, b: 139 });
+    // println!("{}", thing);
 }

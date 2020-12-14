@@ -39,6 +39,17 @@ impl Queued {
     }
 }
 
+impl std::fmt::Display for Queued {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let line = match &self.inner {
+            Queueable::Cell(c) => Line::from(vec![c.clone()].as_slice()),
+            Queueable::Line(l) => l.clone(),
+        };
+        write!(f, "{}", line.to_string())
+    }
+
+}
+
 impl From<(u16, u16, Cell)> for Queued {
     fn from((x, y, cell): (u16, u16, Cell)) -> Self {
         Self {

@@ -8,10 +8,7 @@ pub struct Line {
 }
 
 impl Line {
-    /// Breaks up a string into a Vec<Line>
-    pub(crate) fn slice_to_lines(width: usize, cells: &[Cell]) -> Vec<Line> {
-        cells.chunks(width).map(Line::from).collect::<Vec<Line>>()
-    }
+    const BLANK: char = '|';
 
     /// Returns a length of Line as usize.
     pub fn len(&self) -> usize {
@@ -51,8 +48,20 @@ impl Line {
         self
     }
 
+    pub fn resize(&mut self, size: usize) {
+        self.cells.resize(size, Cell::new(Line::BLANK));
+    }
+
     pub fn center(&mut self, _width: u16) {
         todo!();
+    }
+
+    pub fn iter(&'_ self) -> std::slice::Iter<'_, Cell> {
+        self.cells.iter()
+    }
+
+    pub fn iter_mut(&'_ mut self) -> std::slice::IterMut<'_, Cell> {
+        self.cells.iter_mut()
     }
 }
 
