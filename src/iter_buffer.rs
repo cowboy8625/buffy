@@ -1,4 +1,4 @@
-use crate::{Cell, Buffer};
+use crate::{Buffer, Cell};
 
 pub struct IterBuffer<'a> {
     pub(crate) inner: &'a Buffer,
@@ -13,7 +13,6 @@ impl<'a> Iterator for IterBuffer<'a> {
         self.inner.cells.get(index)
     }
 }
-
 
 pub struct IterMutBuffer<'a> {
     pub(crate) inner: &'a mut Buffer,
@@ -31,9 +30,7 @@ impl<'a> Iterator for IterMutBuffer<'a> {
 
             // Safety: No clue.
 
-            unsafe {
-                Some(&mut *ptr.add(i))
-            }
+            unsafe { Some(&mut *ptr.add(i)) }
         } else {
             None
         }

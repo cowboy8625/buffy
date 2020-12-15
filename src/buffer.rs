@@ -1,5 +1,5 @@
+use crate::{Cell, IterBuffer, IterMutBuffer, Line, Location, Queued};
 use std::fmt;
-use crate::{Cell, Line, IterBuffer, IterMutBuffer, Queued, Location};
 
 /// A Buffer is rectangular data structure that can provide a easy way to arrange
 /// text with color in a terminal.
@@ -10,7 +10,7 @@ pub struct Buffer {
     pub(crate) cells: Vec<Cell>,
     blank: char,
     queue: Vec<Queued>,
-    _wrap: bool,// Needs to be a enum of letter/word wrapper types
+    _wrap: bool, // Needs to be a enum of letter/word wrapper types
 }
 
 // Private
@@ -18,9 +18,7 @@ impl Buffer {
     fn create_cells(width: usize, height: usize, blank: char) -> Vec<Cell> {
         // Builds a Vec of Cells with a width and height.
         let mut lines = Vec::new();
-        (0..height*width).for_each(
-                |_| lines.push(Cell::new(blank))
-            );
+        (0..height * width).for_each(|_| lines.push(Cell::new(blank)));
         lines
     }
 }
@@ -29,10 +27,16 @@ impl Buffer {
 impl Buffer {
     /// Create a new buffer with a width and height and background character (aka blank).
     pub fn new(width: usize, height: usize, blank: char) -> Self {
-        let cells = Self::create_cells(width,height, blank);
-        Self { width, height, cells, blank, queue: Vec::new(), _wrap: false }
+        let cells = Self::create_cells(width, height, blank);
+        Self {
+            width,
+            height,
+            cells,
+            blank,
+            queue: Vec::new(),
+            _wrap: false,
+        }
     }
-
 
     /// Set size of buffer's width and height.
     pub fn set_size(&mut self, width: usize, height: usize) {
@@ -57,9 +61,11 @@ impl Buffer {
         let mut x = (idx % self.width) as u16;
         let y = idx / self.width;
         let string_lines = string.split("\n").collect::<Vec<&str>>();
-        let lines = string_lines.iter().map(|sl| Line::from(*sl)).collect::<Vec<_>>();
+        let lines = string_lines
+            .iter()
+            .map(|sl| Line::from(*sl))
+            .collect::<Vec<_>>();
         lines.into_iter().enumerate().for_each(|(i, l)| {
-            dbg!(&x, y + i);
             self.insert_line(&(x, (y + i) as u16).into(), l);
             x = i as u16;
         });
@@ -70,7 +76,7 @@ impl Buffer {
         let x = (idx % self.width) as u16;
         let y = (idx / self.width) as u16;
         self.queue.push(Queued::from((x, y, cell.clone())));
-        [cell].swap_with_slice(&mut self.cells[idx..idx+1]);
+        [cell].swap_with_slice(&mut self.cells[idx..idx + 1]);
     }
 
     fn insert_from_cords(&mut self, x: u16, y: u16, cell: Cell) {
@@ -82,40 +88,45 @@ impl Buffer {
     pub fn insert_cell(&mut self, loc: &Location, cell: Cell) {
         match loc {
             Location::Index(idx) => self.insert_from_idx(*idx, cell),
-            Location::Cords{x, y} => self.insert_from_cords(*x, *y, cell),
+            Location::Cords { x, y } => self.insert_from_cords(*x, *y, cell),
         }
     }
 
     /// Insert a Line from Location into buffer.
     pub fn insert_line(&mut self, loc: &Location, mut line: Line) {
         let (x, y) = match loc {
-            Location::Index(idx) => {
-                ((idx % self.width) as u16, (idx / self.height) as u16)
-            },
-            Location::Cords{x, y} => (*x, *y),
+            Location::Index(idx) => ((idx % self.width) as u16, (idx / self.height) as u16),
+            Location::Cords { x, y } => (*x, *y),
         };
         let start = y as usize * self.width + x as usize;
         let total = std::cmp::min((start + line.len()) - start - x as usize, self.width);
         let end = start + total;
         line.resize(total);
         self.queue.push(Queued::from((x, y, &line)));
-        line.as_mut_slice().swap_with_slice(&mut self.cells[start..end]);
+        line.as_mut_slice()
+            .swap_with_slice(&mut self.cells[start..end]);
     }
 
     /// Insert a vertical line(aka a slice) at a x and y posistion.
     pub fn insert_vline(&mut self, loc: &Location, line: &Line) {
         // FIXME: Added Insert Queued.
         let (x, y) = match loc {
-            Location::Index(idx) => {
-                ((idx % self.width) as u16, (idx / self.height) as u16)
-            },
-            Location::Cords{x, y} => (*x, *y),
+            Location::Index(idx) => ((idx % self.width) as u16, (idx / self.height) as u16),
+            Location::Cords { x, y } => (*x, *y),
         };
         assert!((x as usize) < self.width);
         assert!((y as usize) < self.height);
         for (idx, cell) in line.iter().enumerate() {
-            if y as usize + idx == self.height { break; }
-            self.insert_cell(&Location::Cords{x,y: y + idx as u16}, cell.clone());
+            if y as usize + idx == self.height {
+                break;
+            }
+            self.insert_cell(
+                &Location::Cords {
+                    x,
+                    y: y + idx as u16,
+                },
+                cell.clone(),
+            );
         }
         // let mut line_iter = line.iter();
         // for (yl, line) in self.cells.chunks_mut(self.width).enumerate() {
@@ -154,15 +165,20 @@ impl Buffer {
 
     /// Returns a Iterator
     pub fn iter(&'_ self) -> IterBuffer<'_> {
-        IterBuffer { inner: self, index: 0 }
+        IterBuffer {
+            inner: self,
+            index: 0,
+        }
     }
 
     /// Returns a mutable Iterator
     pub fn iter_mut(&'_ mut self) -> IterMutBuffer<'_> {
-        IterMutBuffer { inner: self, index: 0 }
+        IterMutBuffer {
+            inner: self,
+            index: 0,
+        }
     }
 }
-
 
 impl<'a> fmt::Display for Buffer {
     // FIXME: Clean this up.
@@ -171,9 +187,17 @@ impl<'a> fmt::Display for Buffer {
         let len = lines.len() - 1;
         for (i, line) in lines.enumerate() {
             if i == len {
-                write!(f, "{}", line.iter().map(|c| c.to_string()).collect::<String>())?;
+                write!(
+                    f,
+                    "{}",
+                    line.iter().map(|c| c.to_string()).collect::<String>()
+                )?;
             } else {
-                write!(f, "{}\n", line.iter().map(|c| c.to_string()).collect::<String>())?;
+                write!(
+                    f,
+                    "{}\n",
+                    line.iter().map(|c| c.to_string()).collect::<String>()
+                )?;
             }
         }
         Ok(())
@@ -188,7 +212,6 @@ impl<'a> IntoIterator for &'a Buffer {
         self.iter()
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -236,7 +259,10 @@ mod test {
         window.insert_from_idx(idx, Cell::new('c'));
         let (x, y) = (idx % width, idx / width);
         assert_eq!(window.to_string(), "###c#\n#####\n#####\n#####\n#####");
-        assert_eq!(window.queue(), Some(vec![Queued::from((x as u16, y as u16, Cell::new('c')))]));
+        assert_eq!(
+            window.queue(),
+            Some(vec![Queued::from((x as u16, y as u16, Cell::new('c')))])
+        );
     }
 
     /// Checks to make sure that the insert_from_cords method not only pushes
@@ -248,7 +274,10 @@ mod test {
         let mut window = Buffer::new(width, height, '#');
         window.insert_from_cords(1, 1, Cell::new('c'));
         assert_eq!(window.to_string(), "#####\n#c###\n#####\n#####\n#####");
-        assert_eq!(window.queue(), Some(vec![Queued::from((x, y, Cell::new('c')))]));
+        assert_eq!(
+            window.queue(),
+            Some(vec![Queued::from((x, y, Cell::new('c')))])
+        );
     }
 
     #[test]
@@ -258,12 +287,15 @@ mod test {
         let idx = 6;
         let mut window = Buffer::new(width, height, '#');
         window.insert_cell(&Location::Index(idx), Cell::new('c'));
-        window.insert_cell(&Location::Cords{x,y}, Cell::new('h'));
+        window.insert_cell(&Location::Cords { x, y }, Cell::new('h'));
         assert_eq!(window.to_string(), "#####\n#c###\n##h##\n#####\n#####");
-        assert_eq!(window.queue(), Some(vec![
-                        Queued::from(((idx%width) as u16, (idx/width) as u16, Cell::new('c'))),
-                        Queued::from((x, y, Cell::new('h'))),
-        ]));
+        assert_eq!(
+            window.queue(),
+            Some(vec![
+                Queued::from(((idx % width) as u16, (idx / width) as u16, Cell::new('c'))),
+                Queued::from((x, y, Cell::new('h'))),
+            ])
+        );
     }
 
     /// Checks to make sure that the insert_line method not only pushes
@@ -276,9 +308,7 @@ mod test {
         let output = "Hey T\n#####\n#####\n#####\n#####";
         window.insert_line(&(x, y).into(), line);
         assert_eq!(window.to_string(), output);
-        let output_queue = vec![
-            Queued::from((x, y, Line::from("Hey T"))),
-        ];
+        let output_queue = vec![Queued::from((x, y, Line::from("Hey T")))];
         assert_eq!(window.queue(), Some(output_queue));
     }
 
@@ -293,17 +323,18 @@ mod test {
         window.insert_vline(&(0u16, 0u16).into(), &line);
         assert_eq!(window.to_string(), "H####\ne####\ny####\n ####\nt####");
         let q = window.queue();
-        assert_eq!(q, Some(vec![
-                                        Queued::from((0, 0, Cell::new('H'))),
-                                        Queued::from((0, 1, Cell::new('e'))),
-                                        Queued::from((0, 2, Cell::new('y'))),
-                                        Queued::from((0, 0, Cell::new('H'))),
-                                        Queued::from((0, 1, Cell::new('e'))),
-                                        Queued::from((0, 2, Cell::new('y'))),
-                                        Queued::from((0, 3, Cell::new(' '))),
-                                        Queued::from((0, 4, Cell::new('t'))),
-        ]));
+        assert_eq!(
+            q,
+            Some(vec![
+                Queued::from((0, 0, Cell::new('H'))),
+                Queued::from((0, 1, Cell::new('e'))),
+                Queued::from((0, 2, Cell::new('y'))),
+                Queued::from((0, 0, Cell::new('H'))),
+                Queued::from((0, 1, Cell::new('e'))),
+                Queued::from((0, 2, Cell::new('y'))),
+                Queued::from((0, 3, Cell::new(' '))),
+                Queued::from((0, 4, Cell::new('t'))),
+            ])
+        );
     }
 }
-
-

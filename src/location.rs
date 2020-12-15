@@ -1,11 +1,14 @@
 pub enum Location {
-    Cords{ x: u16, y: u16 },
+    Cords { x: u16, y: u16 },
     Index(usize),
 }
 
 impl From<(usize, usize)> for Location {
     fn from((x, y): (usize, usize)) -> Self {
-        Self::Cords { x: x as u16, y: y as u16 }
+        Self::Cords {
+            x: x as u16,
+            y: y as u16,
+        }
     }
 }
 

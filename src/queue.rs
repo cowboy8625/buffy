@@ -1,4 +1,4 @@
-use crate::{Line, Cell};
+use crate::{Cell, Line};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Queueable {
@@ -47,13 +47,14 @@ impl std::fmt::Display for Queued {
         };
         write!(f, "{}", line.to_string())
     }
-
 }
 
 impl From<(u16, u16, Cell)> for Queued {
     fn from((x, y, cell): (u16, u16, Cell)) -> Self {
         Self {
-            x, y , inner: Queueable::Cell(cell),
+            x,
+            y,
+            inner: Queueable::Cell(cell),
         }
     }
 }
@@ -61,7 +62,9 @@ impl From<(u16, u16, Cell)> for Queued {
 impl From<(u16, u16, Line)> for Queued {
     fn from((x, y, line): (u16, u16, Line)) -> Self {
         Self {
-            x, y , inner: Queueable::Line(line),
+            x,
+            y,
+            inner: Queueable::Line(line),
         }
     }
 }
@@ -69,7 +72,9 @@ impl From<(u16, u16, Line)> for Queued {
 impl From<(u16, u16, &Line)> for Queued {
     fn from((x, y, line): (u16, u16, &Line)) -> Self {
         Self {
-            x, y , inner: Queueable::Line(line.to_owned()),
+            x,
+            y,
+            inner: Queueable::Line(line.to_owned()),
         }
     }
 }
@@ -77,7 +82,9 @@ impl From<(u16, u16, &Line)> for Queued {
 impl From<(u16, u16, &[Cell])> for Queued {
     fn from((x, y, cells): (u16, u16, &[Cell])) -> Self {
         Self {
-            x, y , inner: Queueable::Line(Line::from(cells)),
+            x,
+            y,
+            inner: Queueable::Line(Line::from(cells)),
         }
     }
 }
@@ -85,7 +92,9 @@ impl From<(u16, u16, &[Cell])> for Queued {
 impl From<(u16, u16, &mut [Cell])> for Queued {
     fn from((x, y, cells): (u16, u16, &mut [Cell])) -> Self {
         Self {
-            x, y , inner: Queueable::Line(Line::from(cells.to_vec().to_owned().as_slice())),
+            x,
+            y,
+            inner: Queueable::Line(Line::from(cells.to_vec().to_owned().as_slice())),
         }
     }
 }
@@ -100,7 +109,3 @@ mod test {
         assert_eq!(q.value(), Line::from("b"));
     }
 }
-
-
-
-

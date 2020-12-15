@@ -1,5 +1,5 @@
-use std::iter::FromIterator;
 use std::fmt;
+use std::iter::FromIterator;
 
 /// Cell holds a character with a style value
 #[derive(Debug, Clone, PartialEq)]
@@ -12,7 +12,11 @@ pub struct Cell {
 impl Cell {
     /// Create a new Cell
     pub fn new(chr: char) -> Self {
-        Self { chr, style: None, end: None }
+        Self {
+            chr,
+            style: None,
+            end: None,
+        }
     }
 
     /// Set style of Cell
@@ -42,12 +46,16 @@ impl From<(char, Option<String>, Option<String>)> for Cell {
 
 impl From<char> for Cell {
     fn from(chr: char) -> Self {
-        Self { chr, style: None, end: None }
+        Self {
+            chr,
+            style: None,
+            end: None,
+        }
     }
 }
 
 impl<'a> FromIterator<&'a Cell> for String {
-    fn from_iter<I: IntoIterator<Item=&'a Cell>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item = &'a Cell>>(iter: I) -> Self {
         let mut string = String::new();
         for c in iter {
             string.push_str(&c.to_string());
