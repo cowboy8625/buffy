@@ -1,43 +1,23 @@
-use buffy;
-use crossterm;
-use crossterm::style::{style, Attribute, Color};
+use buffy::{Buffer, Color};
+use crossterm::{queue, Result, style, terminal, cursor};
 use std::io::{stdout, Write};
 
-fn main() {
-    let string = "No color on this line.";
-
-    let styled = style("This line has color")
-        .with(Color::Yellow)
-        .on(Color::Blue)
-        .attribute(Attribute::Bold);
-    let mut write = stdout();
-    let mut buff = buffy::Buffer::new(50, 30, ' ');
-    let hline = buffy::Line::from(string);
-    let vline = buffy::Line::from(&styled.to_string()[..]);
-
-    buff.insert_vline(&(20u16, 4u16).into(), &vline);
-    buff.insert_line(&(0u16, 3u16).into(), hline);
-    crossterm::queue!(
-        write,
-        crossterm::terminal::Clear(crossterm::terminal::ClearType::All)
-    )
-    .expect("Couldnt Clear");
-    let mut my = 0;
-    if let Some(qline) = buff.queue() {
-        qline.iter().for_each(|line| {
-            let (x, y) = line.cords();
-            my = std::cmp::max(my, y);
-            crossterm::queue!(
-                write,
-                crossterm::cursor::MoveTo(x, y),
-                crossterm::style::Print(line.to_string())
-            )
-            .expect("Failed to print to screen.");
-            crossterm::queue!(write, crossterm::cursor::MoveTo(0, my + 1))
-                .expect("Couldnt move cursor");
-        });
+fn main() -> Result<()> {
+    let mut w = stdout();
+    let mut buf = Buffer::new(100, 40, ' ', Color::White, Color::Rgb{r: 0, g: 134, b: 134});
+    buf.replace_char(2, 2, '|', Color::Red, Color::Cyan);
+    buf.replace_line(0, 3, "Hey There!", Color::White, Color::Black);
+    queue!(&mut w, terminal::Clear(terminal::ClearType::All), cursor::SavePosition)?;
+    for q in buf.queue() {
+        for (i, c) in q.cells.iter().enumerate() {
+            queue!(
+                &mut w,
+                cursor::MoveTo(q.x + i as u16, q.y),
+                style::SetColors(style::Colors::new(q.color[i].0.into(), q.color[i].1.into())),
+                style::Print(c)
+            )?;
+        }
     }
-    write.flush().expect("Failed to flush");
-    // let thing = crossterm::style::SetForegroundColor(Color::Rgb { r: 0, g: 139, b: 139 });
-    // println!("{}", thing);
+    queue!(&mut w, cursor::RestorePosition)?;
+    Ok(())
 }

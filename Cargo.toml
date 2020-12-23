@@ -10,7 +10,10 @@ license = "Apache-2.0"
 keywords = ["buffer"]
 
 [dependencies]
-regex = "1.4.2"
+crossterm = { version = "0.18.2", optional = true }
 
 [dev-dependencies]
 crossterm = "0.18.2"
+
+[features]
+with_crossterm = ["crossterm"]
