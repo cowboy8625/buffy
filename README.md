@@ -11,4 +11,8 @@
 
 Buffy is a window/grid buffer for TUI programs.  Developed for use in
 [Revim](https://github.com/cowboy8625/Revim) a clone of vim remade in Rust.
+[eztui](https://github.com/cowboy8625/eztui) a easy way to make clean tui's in Rust
+
+
+For some examples check the examples folder in project.
 

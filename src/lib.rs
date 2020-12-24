@@ -1,5 +1,14 @@
+//! # Buffy
+
+//! Buffy is a window/grid buffer for TUI programs.  Developed for use in
+//! [Revim](https://github.com/cowboy8625/revim) a clone of vim remade in Rust and
+//! [eztui](https://github.com/cowboy8625/eztui) a easy way to make clean tui's in Rust
+
+
 /// All available colors in terminals
-#[allow(dead_code)]
+///
+/// NOTE: NONE just gets turned into white when using crossterm.
+///
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub enum Color {
     Reset,
@@ -56,6 +65,7 @@ impl From<Color> for crossterm::style::Color {
     }
 }
 
+/// Info of what has changed in buffer.
 #[derive(Debug, Clone)]
 pub struct Queued {
     pub x: u16,
@@ -65,7 +75,7 @@ pub struct Queued {
 }
 
 impl Queued {
-    fn new(x: u16, y: u16, cells: Vec<char>, color: Vec<(Color, Color)>) -> Self {
+    pub(crate) fn new(x: u16, y: u16, cells: Vec<char>, color: Vec<(Color, Color)>) -> Self {
         Self {
             x, y, cells, color,
         }
@@ -83,6 +93,7 @@ pub struct Buffer {
 }
 
 impl Buffer {
+    /// Create a new Buffer form width, height, foreground, background color
     pub fn new(width: usize, height: usize, filler: char, fg: Color, bg: Color) -> Self {
         let total = (width * height) as usize;
         let cells = vec![filler; total];
@@ -102,8 +113,7 @@ impl Buffer {
     /// Inserts a string slice into Buffer
     pub fn replace_line(&mut self, x: usize, y: usize, string: &str, fg: Color, bg: Color) {
         let start = y * self.width + x;
-        let total = std::cmp::min((start + string.len()) - start - x, self.width);
-        let end = start + total;
+        let end = start + string.len();
         let mut slice: Vec<char> = string.chars().collect();
         let mut color = vec![(fg, bg); string.len()];
         self.queue.push(Queued::new(x as u16, y as u16, string.chars().collect(), color.clone()));
@@ -121,10 +131,10 @@ impl Buffer {
         self.queue.push(Queued::new(x as u16, y as u16, vec![c], vec![(bg, fg)]));
     }
 
+    /// all the new changes that have happened to buffer.
     pub fn queue(&mut self) -> Vec<Queued> {
         let queue = self.queue.clone();
         self.queue.clear();
         queue
     }
 }
-
