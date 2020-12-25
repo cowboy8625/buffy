@@ -85,11 +85,11 @@ impl Queued {
 /// Buffer holds char with Color's and is of a set size once built
 #[derive(Debug, Clone)]
 pub struct Buffer {
-    width: usize,
-    height: usize,
-    cells: Vec<char>,
-    color: Vec<(Color, Color)>,
-    queue: Vec<Queued>,
+    pub width: usize,
+    pub height: usize,
+    pub cells: Vec<char>,
+    pub color: Vec<(Color, Color)>,
+    pub queue: Vec<Queued>,
 }
 
 impl Buffer {
@@ -129,12 +129,5 @@ impl Buffer {
         let _ = self.cells.remove(idx);
         self.cells.insert(idx, c);
         self.queue.push(Queued::new(x as u16, y as u16, vec![c], vec![(bg, fg)]));
-    }
-
-    /// all the new changes that have happened to buffer.
-    pub fn queue(&mut self) -> Vec<Queued> {
-        let queue = self.queue.clone();
-        self.queue.clear();
-        queue
     }
 }
