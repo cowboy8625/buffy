@@ -1,18 +1,37 @@
 # Buffy
+<p align="center">
+  <a><img alt="logo" src="./logo.png"></a>
+</p>
+<h1 align="center"> Buffy </h1>
+<p align="center">
+  <a><img alt="MAINTAINED" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg"></a>
+  <a><img alt="Downloads" src="https://img.shields.io/crates/d/buffy"></a>
+  <a href="https://crates.io/crates/buffy"><img alt="crates.io" src="https://img.shields.io/crates/v/buffy.svg"></a>
+  <a><img alt="License" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
+</p>
+<p align="center">
+  <a><img alt="issues" src="https://img.shields.io/github/issues/cowboy8625/buffy"></a>
+  <a><img alt="last commit" src="https://img.shields.io/github/last-commit/cowboy8625/buffy"></a>
+  <a><img alt="repo size" src="https://img.shields.io/github/repo-size/cowboy8625/buffy"></a>
+  <a href="https://discord.gg/KwnGX8P"><img alt="Discord Chat" src="https://img.shields.io/discord/509849754155614230"></a>
+</p>
+<p align="center">
+  <a><img alt="RUST" src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white"></a>
+</p>
 
-[![docs.rs](https://docs.rs/buffy/badge.svg)](https://docs.rs/buffy)
-[![crates.io](https://img.shields.io/crates/v/buffy.svg)](https://crates.io/crates/buffy)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![lastupdated](https://img.shields.io/github/last-commit/cowboy8625/buffy)
-![GitHub repo size](https://img.shields.io/github/repo-size/cowboy8625/buffy)
-![issuse](https://img.shields.io/github/issues/cowboy8625/buffy)
-![Discord](https://img.shields.io/discord/509849754155614230)
-![Lines of Code](https://tokei.rs/b1/github/cowboy8625/buffy)
+# Table Of Contents:
 
-Buffy is a window/grid buffer for TUI programs.  Developed for use in
-[Revim](https://github.com/cowboy8625/Revim) a clone of vim remade in Rust.
-[eztui](https://github.com/cowboy8625/eztui) a easy way to make clean tui's in Rust
+  - [**About**](#about)
+  - [**Docs**]("https://crates.io/crates/buffy")
+  - [**Road Map**](#road-map)
 
+# About
 
-For some examples check the examples folder in project.
+> The motivation be hide creating ***Buffy*** was the need for a buffer for the screen in my text
+editor [ReVi](https://github.com/revi-editor/revi).  The aim for this project can be seen in the
+[road map](#road-map) which is not that detailed yet.
 
+# Road Map
+
+- [ ] **Complete Unicode Support**
+- [ ] **Smart Update Buffer** Knowing what line or character was change to just update over redrawing screen.

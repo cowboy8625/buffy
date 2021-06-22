@@ -1,19 +1,15 @@
 [package]
 name = "buffy"
-version = "0.0.2"
-authors = ["cowboy8625 <43012445+cowboy8625@users.noreply.github.com>"]
+version = "0.1.0"
+authors = ["cowboy8625 <cowboy8625@protonmail.com>"]
 edition = "2018"
-description = "A text buffer"
+description = "A screen buffer that handles unicode for text editors."
 readme = "README.md"
 repository = "https://github.com/cowboy8625/buffy"
 license = "Apache-2.0"
-keywords = ["buffer"]
+keywords = ["buffer", "utf-8", "unicode"]
 
 [dependencies]
-crossterm = { version = "0.18.2", optional = true }
+unicode-segmentation = "1.7.1"
+unicode-width = "0.1.8"
 
-[dev-dependencies]
-crossterm = "0.18.2"
-
-[features]
-with_crossterm = ["crossterm"]
